@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de la Serpiente Mejorado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #6ab04c;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            background-color: #a3d977;
+            border: 10px solid #2d572c;
+            display: block;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #2d572c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Juego de la Serpiente 🐍</h1>
+    <p>Puntuación: <span id="score">0</span> | Tiempo: <span id="timer">60</span>s</p>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div class="controls">
+        <button onclick="startGame()">▶ Iniciar</button>
+        <button onclick="restartGame()">🔄 Reiniciar</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const gridSize = 20;
+        let snake = [{ x: 200, y: 300 }];
+        let direction = "DOWN";
+        let food = { x: 100, y: 200 };
+        let score = 0;
+        let timeLeft = 60;
+        let gameInterval, timerInterval;
+        
+        // Sonidos
+        const eatSound = new Howl({ src: ['https://www.fesliyanstudios.com/play-mp3/387.mp3'] });
+        const gameOverSound = new Howl({ src: ['https://www.fesliyanstudios.com/play-mp3/384.mp3'] });
+        
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+            if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+        });
+        
+        function startGame() {
+            if (!gameInterval) {
+                gameInterval = setInterval(gameLoop, 200); // Reducimos la velocidad de la serpiente
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        document.getElementById("timer").innerText = timeLeft;
+                    } else {
+                        gameOver();
+                    }
+                }, 1000);
+            }
+        }
+        
+        function restartGame() {
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+            snake = [{ x: 200, y: 300 }];
+            direction = "DOWN";
+            food = { x: 100, y: 200 };
+            score = 0;
+            timeLeft = 60;
+            document.getElementById("score").innerText = score;
+            document.getElementById("timer").innerText = timeLeft;
+            gameInterval = null;
+            startGame();
+        }
+        
+        function update() {
+            let head = { ...snake[0] };
+            if (direction === "UP") head.y -= gridSize;
+            if (direction === "DOWN") head.y += gridSize;
+            if (direction === "LEFT") head.x -= gridSize;
+            if (direction === "RIGHT") head.x += gridSize;
+            
+            // Verificar colisiones
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || snake.some(s => s.x === head.x && s.y === head.y)) {
+                gameOver();
+                return;
+            }
+            
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                eatSound.play();
+                score += 10;
+                document.getElementById("score").innerText = score;
+                food = {
+                    x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
+                    y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize,
+                };
+            } else {
+                snake.pop();
+            }
+        }
+        
+        function draw() {
+            ctx.fillStyle = "#a3d977";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, gridSize, gridSize);
+            
+            ctx.fillStyle = "blue";
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+            });
+        }
+        
+        function gameLoop() {
+            update();
+            draw();
+        }
+        
+        function gameOver() {
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+            gameOverSound.play();
+            alert("¡Juego terminado! Puntuación final: " + score);
+        }
+    </script>
+</body>
+</html>
