@@ -23,16 +23,29 @@
         }
         .controls {
             margin-top: 10px;
+            display: flex;
+            justify-content: center;
         }
         button {
-            padding: 10px;
-            font-size: 16px;
+            padding: 15px;
+            font-size: 20px;
             margin: 5px;
             cursor: pointer;
             background-color: #2d572c;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
+        }
+        .game-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 5px;
+            margin-top: 15px;
+        }
+        .game-controls button {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
         }
     </style>
 </head>
@@ -43,6 +56,14 @@
     <div class="controls">
         <button onclick="startGame()">▶ Iniciar</button>
         <button onclick="restartGame()">🔄 Reiniciar</button>
+    </div>
+    <div class="game-controls">
+        <button onclick="changeDirection('UP')">⬆️</button>
+        <button></button>
+        <button onclick="changeDirection('RIGHT')">➡️</button>
+        <button onclick="changeDirection('LEFT')">⬅️</button>
+        <button></button>
+        <button onclick="changeDirection('DOWN')">⬇️</button>
     </div>
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -66,9 +87,16 @@
             if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
         });
         
+        function changeDirection(newDirection) {
+            if (newDirection === "UP" && direction !== "DOWN") direction = "UP";
+            if (newDirection === "DOWN" && direction !== "UP") direction = "DOWN";
+            if (newDirection === "LEFT" && direction !== "RIGHT") direction = "LEFT";
+            if (newDirection === "RIGHT" && direction !== "LEFT") direction = "RIGHT";
+        }
+        
         function startGame() {
             if (!gameInterval) {
-                gameInterval = setInterval(gameLoop, 200); // Reducimos la velocidad de la serpiente
+                gameInterval = setInterval(gameLoop, 200);
                 timerInterval = setInterval(() => {
                     if (timeLeft > 0) {
                         timeLeft--;
@@ -101,7 +129,6 @@
             if (direction === "LEFT") head.x -= gridSize;
             if (direction === "RIGHT") head.x += gridSize;
             
-            // Verificar colisiones
             if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || snake.some(s => s.x === head.x && s.y === head.y)) {
                 gameOver();
                 return;
@@ -124,10 +151,8 @@
         function draw() {
             ctx.fillStyle = "#a3d977";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
             ctx.fillStyle = "red";
             ctx.fillRect(food.x, food.y, gridSize, gridSize);
-            
             ctx.fillStyle = "blue";
             snake.forEach(segment => {
                 ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
