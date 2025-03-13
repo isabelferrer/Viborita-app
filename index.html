@@ -66,6 +66,7 @@
     let direction = 'RIGHT';
     let score = 0;
     let gameRunning = false;
+    let moveInterval;
     
     const gameSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
     const bgMusic = new Audio('https://www.soundjay.com/button/beep-09.wav');
@@ -75,7 +76,7 @@
       menu.style.display = 'none';
       gameRunning = true;
       bgMusic.play();
-      requestAnimationFrame(gameLoop);
+      moveInterval = setInterval(gameLoop, 100);
     }
 
     function drawSnake() {
@@ -136,10 +137,10 @@
       drawSnake();
       drawFood();
       scoreElement.textContent = `Puntuación: ${score}`;
-      requestAnimationFrame(gameLoop);
     }
 
     function resetGame() {
+      clearInterval(moveInterval);
       snake = [{ x: 100, y: 100 }];
       food = generateFood();
       direction = 'RIGHT';
@@ -147,6 +148,8 @@
       scoreElement.textContent = 'Puntuación: 0';
       gameRunning = false;
       menu.style.display = 'block';
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
     }
 
     function setDirection(newDirection) {
